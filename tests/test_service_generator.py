@@ -1,5 +1,5 @@
 import pytest
-from openapi_pydantic.v3.v3_0 import (
+from openapi_pydantic.v3 import (
     Operation, Reference, RequestBody, MediaType, Schema, Parameter,
     DataType, Response, ParameterLocation
 )
