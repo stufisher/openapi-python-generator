@@ -15,7 +15,10 @@ from httpx import ConnectTimeout
 from openapi_pydantic.v3 import OpenAPI
 from pydantic import ValidationError
 
-from .common import FormatOptions, Formatter, HTTPLibrary, PydanticVersion
+from .common import FormatOptions
+from .common import Formatter
+from .common import HTTPLibrary
+from .common import PydanticVersion
 from .common import library_config_dict
 from .language_converters.python.generator import generator
 from .language_converters.python.jinja_config import SERVICE_TEMPLATE
@@ -35,7 +38,9 @@ def write_code(path: Path, content: str, formatter: Formatter) -> None:
     elif formatter == Formatter.NONE:
         formatted_contend = content
     else:
-        raise NotImplementedError(f"Missing implementation for formatter {formatter!r}.")
+        raise NotImplementedError(
+            f"Missing implementation for formatter {formatter!r}."
+        )
     with open(path, "w") as f:
         f.write(formatted_contend)
 
@@ -43,7 +48,9 @@ def write_code(path: Path, content: str, formatter: Formatter) -> None:
 def format_using_black(content: str) -> str:
     try:
         formatted_contend = black.format_file_contents(
-            content, fast=FormatOptions.skip_validation, mode=black.FileMode(line_length=FormatOptions.line_length)
+            content,
+            fast=FormatOptions.skip_validation,
+            mode=black.FileMode(line_length=FormatOptions.line_length),
         )
     except NothingChanged:
         return content
@@ -70,9 +77,9 @@ def get_open_api(source: Union[str, Path]) -> OpenAPI:
     try:
         # Handle remote files
         if not isinstance(source, Path) and (
-                source.startswith("http://") or source.startswith("https://")
+            source.startswith("http://") or source.startswith("https://")
         ):
-            content = httpx.get(source).text
+            content = httpx.get(source, timeout=30).text
             # Try JSON first, then YAML for remote files
             try:
                 return OpenAPI(**orjson.loads(content))
@@ -105,13 +112,13 @@ def get_open_api(source: Union[str, Path]) -> OpenAPI:
         click.echo(f"Could not connect to {source}.")
         raise ConnectError(f"Could not connect to {source}.") from None
     except ValidationError:
-        click.echo(
-            f"File {source} is not a valid OpenAPI 3.0 specification."
-        )
+        click.echo(f"File {source} is not a valid OpenAPI 3.0 specification.")
         raise
 
 
-def write_data(data: ConversionResult, output: Union[str, Path], formatter: Formatter) -> None:
+def write_data(
+    data: ConversionResult, output: Union[str, Path], formatter: Formatter
+) -> None:
     """
     This function will firstly create the folder structure of output, if it doesn't exist. Then it will create the
     models from data.models into the models sub module of the output folder. After this, the services will be created
@@ -156,7 +163,7 @@ def write_data(data: ConversionResult, output: Union[str, Path], formatter: Form
         files.append(service.file_name)
         write_code(
             services_path / f"{service.file_name}.py",
-            jinja_env.get_template(SERVICE_TEMPLATE).render(**service.dict()),
+            jinja_env.get_template(SERVICE_TEMPLATE).render(**service.model_dump()),
             formatter,
         )
 

@@ -7,7 +7,14 @@ from typing import Tuple
 from typing import Union
 
 import click
-from openapi_pydantic.v3 import Reference, Schema, Operation, Parameter, RequestBody, Response, MediaType, PathItem
+from openapi_pydantic.v3 import MediaType
+from openapi_pydantic.v3 import Operation
+from openapi_pydantic.v3 import Parameter
+from openapi_pydantic.v3 import PathItem
+from openapi_pydantic.v3 import Reference
+from openapi_pydantic.v3 import RequestBody
+from openapi_pydantic.v3 import Response
+from openapi_pydantic.v3 import Schema
 
 from openapi_python_generator.language_converters.python import common
 from openapi_python_generator.language_converters.python.common import normalize_symbol
@@ -32,7 +39,7 @@ def generate_body_param(operation: Operation) -> Union[str, None]:
         return None
     else:
         if isinstance(operation.requestBody, Reference):
-            return "data.dict()"
+            return "data.model_dump()"
 
         if operation.requestBody.content is None:
             return None  # pragma: no cover
@@ -46,11 +53,11 @@ def generate_body_param(operation: Operation) -> Union[str, None]:
             return None  # pragma: no cover
 
         if isinstance(media_type.media_type_schema, Reference):
-            return "data.dict()"
+            return "data.model_dump()"
         elif isinstance(media_type.media_type_schema, Schema):
             schema = media_type.media_type_schema
             if schema.type == "array":
-                return "[i.dict() for i in data]"
+                return "[i.model_dump() for i in data]"
             elif schema.type == "object":
                 return "data"
             else:
@@ -293,7 +300,7 @@ def generate_services(
         )
 
         so.content = jinja_env.get_template(library_config.template_name).render(
-            **so.dict()
+            **so.model_dump()
         )
 
         if op.tags is not None and len(op.tags) > 0:
