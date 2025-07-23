@@ -5,7 +5,7 @@ from typing import Dict
 from typing import Generator
 
 import pytest
-from openapi_pydantic.v3.v3_0 import OpenAPI
+from openapi_pydantic.v3 import OpenAPI
 from pydantic import ValidationError
 
 test_data_folder = Path(__file__).parent / "test_data"
